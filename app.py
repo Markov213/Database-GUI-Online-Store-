@@ -5,10 +5,10 @@ import pandas as pd
 # -------------------- DATABASE CONNECTION --------------------
 def get_connection():
     return mysql.connector.connect(
-        host="127.0.0.1", # this is a localhost on my device
-        user="root",
-        password="",        
-        database="onlinestore", 
+        host="den1.mssql8.gear.host", # this is a localhost on my device
+        user="onlinestore5",
+        password="	Sa73aw~~29RD",        
+        database="onlinestore5", 
         port=3306               
     )
 
@@ -200,10 +200,10 @@ elif menu == "Insert Data":
         cursor.execute("SELECT ID, Name FROM Products")
         products = cursor.fetchall()
         product_options = {name: pid for pid, name in products}
-    
+
         order_id = st.number_input("Order ID", min_value=1)
         selected_products = st.multiselect("Select Products", list(product_options.keys()))
-        
+
         if st.button("Insert Order Details"):
             for product_name in selected_products:
                 product_id = product_options[product_name]
