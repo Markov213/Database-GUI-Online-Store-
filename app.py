@@ -9,7 +9,7 @@ def get_connection():
         user="onlinestore5",
         password="Sa73aw~~29RD",        
         database="onlinestore5", 
-        port=3306               
+        port=1433             
     )
 
 # -------------------- SIDEBAR --------------------
