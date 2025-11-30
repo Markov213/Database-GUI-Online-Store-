@@ -56,6 +56,7 @@ elif menu == "Insert Data":
     # -------------------- Departments --------------------
     elif option == "Departments":
         dep_name = st.text_input("Department Name")
+        # we here run a query to get all the employee IDs to choose a manager from them
         cursor.execute("SELECT ID FROM Employees")
         managers = [row[0] for row in cursor.fetchall()]
         mgr_id = st.selectbox("Manager ID", managers)
@@ -194,6 +195,26 @@ elif menu == "Insert Data":
             """, (order_id, product_id, quantity, price))
             conn.commit()
             st.success("✅ Order Detail inserted successfully!")
+            
+    elif option == "Order_Details":
+        cursor.execute("SELECT ID, Name FROM Products")
+        products = cursor.fetchall()
+        product_options = {name: pid for pid, name in products}
+    
+        order_id = st.number_input("Order ID", min_value=1)
+        selected_products = st.multiselect("Select Products", list(product_options.keys()))
+        
+        if st.button("Insert Order Details"):
+            for product_name in selected_products:
+                product_id = product_options[product_name]
+                quantity = st.number_input(f"Quantity for {product_name}", min_value=1)
+                cursor.execute("""
+                    INSERT INTO Order_Details (Order_ID, Product_ID, Quantity)
+                    VALUES (%s, %s, %s)
+                """, (order_id, product_id, quantity))
+            conn.commit()
+            st.success("✅ Products added to order successfully!")
+
 
     # -------------------- Contain --------------------
     elif option == "Contain":
