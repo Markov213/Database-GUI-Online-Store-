@@ -7,7 +7,7 @@ def get_connection():
     return mysql.connector.connect(
         host="den1.mssql8.gear.host", # this is a localhost on my device
         user="onlinestore5",
-        password="	Sa73aw~~29RD",        
+        password="Sa73aw~~29RD",        
         database="onlinestore5", 
         port=3306               
     )
