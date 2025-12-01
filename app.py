@@ -5,10 +5,10 @@ import pandas as pd
 # -------------------- DATABASE CONNECTION --------------------
 def get_connection():
     return mysql.connector.connect(
-        host="den1.mssql8.gear.host", # this is a localhost on my device
-        user="onlinestore5",
-        password="Sa73aw~~29RD",        
-        database="onlinestore5", 
+        host="sql.bsite.net\MSSQL2016", # this is a localhost on my device
+        user="marksl_onlinestore",
+        password="2006",        
+        database="marksl_onlinestore", 
         port=1433             
     )
 
