@@ -1,1 +1,1 @@
-# Online Store Database Provided with GUI
+# Online Store Database Provided With GUI
