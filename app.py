@@ -5,11 +5,11 @@ import pandas as pd
 # -------------------- DATABASE CONNECTION --------------------
 def get_connection():
     return mysql.connector.connect(
-        host="sql.bsite.net\MSSQL2016", # this is a localhost on my device
-        user="marksl_onlinestore",
-        password="2006",        
-        database="marksl_onlinestore", 
-        port=1433             
+        host="127.0.0.1", # this is a localhost on my device
+        user="root",
+        password="",        
+        database="onlinestore", 
+        port=3306         
     )
 
 # -------------------- SIDEBAR --------------------
@@ -18,71 +18,40 @@ menu = st.sidebar.radio("Navigate", ["Home", "Insert Data", "View Data", "Run Qu
 
 # -------------------- HOME --------------------
 if menu == "Home": # Home Page there is nothing important here fellas
-    st.title("Welcome to Online Store Dashboard")
+    st.title("Welcome to FCDS Online Store Dashboard")
     st.write("Use the sidebar to insert data, view tables, or run queries.")
 
 # -------------------- INSERT DATA --------------------
 elif menu == "Insert Data":
     st.header("Insert New Records")
-    option = st.selectbox("Choose Table", [
-        "Customers", "Departments", "Employees", "Orders",
-        "Categories", "Products", "Vendor", "Warehouse",
-        "Order_Details", "Contain", "Sell"
+    option = st.selectbox("Choose Table", ["Employees",
+    "Departments", "Categories", "Products", "Vendor",
+    "Warehouse", "Contain", "Sell", "Customers", "Orders",
+      "Order_Details"
     ])
     # we open a connection and cursor to execute queries and start sending or data to the database on our server
     conn = get_connection()
     cursor = conn.cursor()
 
-    # -------------------- Customers --------------------
-    if option == "Customers":
-        fname = st.text_input("First Name")
-        lname = st.text_input("Last Name")
-        gender = st.selectbox("Gender", ["M", "F"])
-        status = st.text_input("Status")
-        email = st.text_input("Email")
-        phone = st.text_input("Phone")
-        address = st.text_input("Address")
-        birth_date = st.date_input("Birth Date")
-        reg_date = st.date_input("Registration Date")
-
-        if st.button("Insert Customer"):
-            cursor.execute("""
-                INSERT INTO Customers (First_Name, Last_Name, Gender, Status, Email, phone, Address, Birth_Date, Registeration_Date)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            """, (fname, lname, gender, status, email, phone, address, birth_date, reg_date))
-            conn.commit()
-            st.success("✅ Customer inserted successfully!")
-
-    # -------------------- Departments --------------------
-    elif option == "Departments":
-        dep_name = st.text_input("Department Name")
-        # we here run a query to get all the employee IDs to choose a manager from them
-        cursor.execute("SELECT ID FROM Employees")
-        managers = [row[0] for row in cursor.fetchall()]
-        mgr_id = st.selectbox("Manager ID", managers)
-
-        if st.button("Insert Department"):
-            cursor.execute("""
-                INSERT INTO Departments (Dep_Name, Mgr_ID) VALUES (%s,%s)
-            """, (dep_name, mgr_id))
-            conn.commit()
-            st.success("✅ Department inserted successfully!")
-
     # -------------------- Employees --------------------
-    elif option == "Employees":
+    if option == "Employees":
         fname = st.text_input("First Name")
         lname = st.text_input("Last Name")
         status = st.text_input("Status")
         salary = st.number_input("Salary", min_value=0.0)
         email = st.text_input("Email")
-        gender = st.selectbox("Gender", ["Male", "Female"])
-        attribute = st.text_input("Attribute")
+        gender = st.selectbox("Gender", ["M", "F"])
+
+        # we run queries to get existing employee and department IDs for foreign key relationships
         cursor.execute("SELECT ID FROM Employees")
         supervisors = [row[0] for row in cursor.fetchall()]
         super_id = st.selectbox("Supervisor ID", [None] + supervisors)
+
+        # we run a query to get all department IDs
         cursor.execute("SELECT ID FROM Departments")
         departments = [row[0] for row in cursor.fetchall()]
         dep_id = st.selectbox("Department ID", [None] + departments)
+
         phone = st.text_input("Phone")
         address = st.text_input("Address")
         birth_date = st.date_input("Birth Date")
@@ -96,26 +65,21 @@ elif menu == "Insert Data":
             conn.commit()
             st.success("✅ Employee inserted successfully!")
 
-    # -------------------- Orders --------------------
-    elif option == "Orders":
-        amount = st.number_input("Amount", min_value=0)
-        order_date = st.date_input("Order Date")
-        delivery_date = st.date_input("Delivery Date")
-        status = st.selectbox("Status", ["Pending", "Delivered"])
-        cursor.execute("SELECT ID FROM Customers")
-        customers = [row[0] for row in cursor.fetchall()]
-        customer_id = st.selectbox("Customer ID", customers)
-        cursor.execute("SELECT ID FROM Employees")
-        employees = [row[0] for row in cursor.fetchall()]
-        delivery_id = st.selectbox("Delivery Employee ID", employees)
+    # -------------------- Departments --------------------
+    elif option == "Departments":
+        dep_name = st.text_input("Department Name")
 
-        if st.button("Insert Order"):
+        # we here run a query to get all the employee IDs to choose a manager from them
+        cursor.execute("SELECT ID FROM Employees")
+        managers = [row[0] for row in cursor.fetchall()]
+        mgr_id = st.selectbox("Manager ID", managers)
+
+        if st.button("Insert Department"):
             cursor.execute("""
-                INSERT INTO Orders (Amount, Order_Date, Delivery_Date, Status, Customer_ID, Delivery_ID)
-                VALUES (%s,%s,%s,%s,%s,%s)
-            """, (amount, order_date, delivery_date, status, customer_id, delivery_id))
+                INSERT INTO Departments (Dep_Name, Mgr_ID) VALUES (%s,%s)
+            """, (dep_name, mgr_id))
             conn.commit()
-            st.success("✅ Order inserted successfully!")
+            st.success("✅ Department inserted successfully!")
 
     # -------------------- Categories --------------------
     elif option == "Categories":
@@ -134,9 +98,11 @@ elif menu == "Insert Data":
         name = st.text_input("Product Name")
         price = st.number_input("Price", min_value=0.0)
         quantity = st.number_input("Quantity", min_value=0)
+        # we run a query to get all category IDs for foreign key relationship
         cursor.execute("SELECT ID FROM Categories")
         categories = [row[0] for row in cursor.fetchall()]
         category_id = st.selectbox("Category ID", categories)
+
         status = st.selectbox("Status", ["Available", "Out of Stock"])
 
         if st.button("Insert Product"):
@@ -176,45 +142,6 @@ elif menu == "Insert Data":
             """, (name, location, capacity))
             conn.commit()
             st.success("✅ Warehouse inserted successfully!")
-
-    # -------------------- Order_Details --------------------
-    elif option == "Order_Details":
-        cursor.execute("SELECT ID FROM Orders")
-        orders = [row[0] for row in cursor.fetchall()]
-        cursor.execute("SELECT ID FROM Products")
-        products = [row[0] for row in cursor.fetchall()]
-        order_id = st.selectbox("Order ID", orders)
-        product_id = st.selectbox("Product ID", products)
-        quantity = st.number_input("Quantity", min_value=1)
-        price = st.number_input("Price", min_value=0.0)
-
-        if st.button("Insert Order Detail"):
-            cursor.execute("""
-                INSERT INTO Order_Details (Order_ID, Product_ID, Quantity, Price)
-                VALUES (%s,%s,%s,%s)
-            """, (order_id, product_id, quantity, price))
-            conn.commit()
-            st.success("✅ Order Detail inserted successfully!")
-            
-    elif option == "Order_Details":
-        cursor.execute("SELECT ID, Name FROM Products")
-        products = cursor.fetchall()
-        product_options = {name: pid for pid, name in products}
-
-        order_id = st.number_input("Order ID", min_value=1)
-        selected_products = st.multiselect("Select Products", list(product_options.keys()))
-
-        if st.button("Insert Order Details"):
-            for product_name in selected_products:
-                product_id = product_options[product_name]
-                quantity = st.number_input(f"Quantity for {product_name}", min_value=1)
-                cursor.execute("""
-                    INSERT INTO Order_Details (Order_ID, Product_ID, Quantity)
-                    VALUES (%s, %s, %s)
-                """, (order_id, product_id, quantity))
-            conn.commit()
-            st.success("✅ Products added to order successfully!")
-
 
     # -------------------- Contain --------------------
     elif option == "Contain":
@@ -261,15 +188,82 @@ elif menu == "Insert Data":
             conn.commit()
             st.success("✅ Sell record inserted successfully!")
 
-    conn.close()
+    # -------------------- Customers --------------------
+    elif option == "Customers":
+        fname = st.text_input("First Name")
+        lname = st.text_input("Last Name")
+        gender = st.selectbox("Gender", ["M", "F"])
+        status = st.selectbox("Status", ["Active", "Inactive"])
+        email = st.text_input("Email")
+        phone = st.text_input("Phone")
+        address = st.text_input("Address")
+        birth_date = st.date_input("Birth Date")
+        reg_date = st.date_input("Registration Date")
+
+        if st.button("Insert Customer"):
+            cursor.execute("""
+                INSERT INTO Customers (First_Name, Last_Name, Gender, Status, Email, phone, Address, Birth_Date, Registeration_Date)
+                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            """, (fname, lname, gender, status, email, phone, address, birth_date, reg_date))
+            conn.commit()
+            st.success("✅ Customer inserted successfully!")
+
+    # -------------------- Orders --------------------
+    elif option == "Orders":
+        amount = st.number_input("Amount", min_value=0)
+        order_date = st.date_input("Order Date")
+        delivery_date = st.date_input("Delivery Date")
+        status = st.selectbox("Status", ["Pending", "Processing", "In_transit", "Delivered", "Cancelled", "Returned"])
+
+        cursor.execute("SELECT ID FROM Customers")
+        customers = [row[0] for row in cursor.fetchall()]
+        customer_id = st.selectbox("Customer ID", customers)
+
+        cursor.execute("SELECT ID FROM Employees")
+        employees = [row[0] for row in cursor.fetchall()]
+        delivery_id = st.selectbox("Delivery Employee ID", employees)
+
+        if st.button("Insert Order"):
+            cursor.execute("""
+                INSERT INTO Orders (Amount, Order_Date, Delivery_Date, Status, Customer_ID, Delivery_ID)
+                VALUES (%s,%s,%s,%s,%s,%s)
+            """, (amount, order_date, delivery_date, status, customer_id, delivery_id))
+            conn.commit()
+            st.success("✅ Order inserted successfully!")
+
+    # -------------------- Order_Details --------------------
+    elif option == "Order_Details":
+        cursor.execute("SELECT ID FROM Orders")
+        orders = [row[0] for row in cursor.fetchall()]
+        order_id = st.selectbox("Order ID", orders)
+
+        cursor.execute("SELECT ID, Name FROM Products")
+        products = cursor.fetchall()
+        product_options = {name: pid for pid, name in products}
+
+        selected_products = st.multiselect("Select Products", list(product_options.keys()))
+
+        order_details = []
+        for product_name in selected_products:
+            product_id = product_options[product_name]
+            quantity = st.number_input(f"Quantity for {product_name}", min_value=1, key=product_name)
+            order_details.append((order_id, product_id, quantity))
+
+        if st.button("Insert Order Details"):
+            cursor.executemany("""
+                INSERT INTO Order_Details (Order_ID, Product_ID, Quantity)
+                VALUES (%s, %s, %s)
+            """, order_details)
+            conn.commit()
+            st.success("✅ Products added to order successfully!")
+
     
 elif menu == "View Data":
     st.header("View Tables")
-    table = st.selectbox("Select Table", [
-        "Customers", "Departments", "Employees", "Orders",
-        "Categories", "Products", "Vendor", "Warehouse",
-        "Order_Details", "Contain", "Sell"
-    ])
+    table = st.selectbox("Select Table", ["Employees",
+    "Departments", "Categories", "Products", "Vendor",
+    "Warehouse", "Contain", "Sell", "Customers", "Orders",
+      "Order_Details"])
     try:
         conn = get_connection()
         df = pd.read_sql(f"SELECT * FROM {table}", conn)
@@ -290,4 +284,3 @@ elif menu == "Run Queries":
             conn.close()
         except Exception as e:
             st.error(f"❌ Error: {e}")
-
